@@ -1,0 +1,86 @@
+/* Game API AI Live Chat + Cookie Consent enhancements */
+(function(){
+  'use strict';
+  if(window.__gameApiEnhancementsLoaded)return;
+  window.__gameApiEnhancementsLoaded=true;
+
+  const style=document.createElement('style');
+  style.textContent=`
+  .game-api-ai-teaser{position:fixed;right:22px;bottom:150px;z-index:10002;width:min(340px,calc(100vw - 30px));padding:15px 16px;border:1px solid rgba(120,165,255,.2);border-radius:18px;background:linear-gradient(135deg,rgba(10,22,42,.98),rgba(16,13,39,.98));box-shadow:0 20px 55px rgba(0,0,0,.48),0 0 30px rgba(79,140,255,.13);color:#fff;font-family:inherit;cursor:pointer;animation:gaTeaserIn .35s ease-out}
+  .game-api-ai-teaser:hover{transform:translateY(-2px)}
+  .game-api-ai-teaser-row{display:flex;align-items:center;gap:12px}.game-api-ai-teaser-icon{width:42px;height:42px;flex:0 0 42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#7c5cff);box-shadow:0 8px 22px rgba(37,99,235,.25)}
+  .game-api-ai-teaser strong{display:block;font-size:13px;line-height:1.35}.game-api-ai-teaser span{display:block;margin-top:3px;color:#8fa0b7;font-size:11px;line-height:1.4}.game-api-ai-teaser-arrow{margin-left:auto;color:#78a8ff;font-size:16px}
+  .game-api-ai-panel.ai-session-active .game-api-ai-close{display:none!important}.game-api-ai-end{display:none;align-items:center;gap:6px;padding:8px 10px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.04);color:#b8c4d5;font:700 10px inherit;cursor:pointer}.game-api-ai-panel.ai-session-active .game-api-ai-end{display:flex}.game-api-ai-end:hover{background:rgba(255,255,255,.08);color:#fff}
+  .game-api-ai-rating{height:100%;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;color:#fff}.game-api-ai-rating-icon{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(37,99,235,.22),rgba(124,92,255,.22));border:1px solid rgba(117,167,255,.18);color:#9fc1ff;font-size:25px;margin-bottom:15px}.game-api-ai-rating h3{margin:0 0 7px;font-size:18px}.game-api-ai-rating p{margin:0 0 18px;color:#8998ad;font-size:12px;line-height:1.55;max-width:290px}.game-api-ai-stars{display:flex;gap:7px;margin-bottom:18px}.game-api-ai-star{width:40px;height:40px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.035);color:#65748a;font-size:17px;cursor:pointer;transition:.18s}.game-api-ai-star:hover,.game-api-ai-star.selected{color:#ffd166;border-color:rgba(255,209,102,.35);background:rgba(255,209,102,.08);transform:translateY(-2px)}.game-api-ai-new{display:none;border:0;border-radius:12px;padding:11px 16px;background:linear-gradient(135deg,#2563eb,#6d4cff);color:#fff;font:800 12px inherit;cursor:pointer;box-shadow:0 10px 24px rgba(37,99,235,.2)}.game-api-ai-new:hover{filter:brightness(1.08);transform:translateY(-1px)}.game-api-ai-rating.rated .game-api-ai-stars{display:none}.game-api-ai-rating.rated .game-api-ai-new{display:inline-flex}.game-api-ai-thanks{display:none;color:#9fb2c9;font-size:11px;margin:-4px 0 17px}.game-api-ai-rating.rated .game-api-ai-thanks{display:block}
+  .game-api-cookie-overlay{position:fixed;inset:0;z-index:11000;background:rgba(2,7,16,.62);backdrop-filter:blur(7px);display:flex;align-items:flex-end;justify-content:center;padding:24px}.game-api-cookie-card{width:min(760px,100%);display:grid;grid-template-columns:170px 1fr;gap:22px;padding:22px;border:1px solid rgba(255,255,255,.13);border-radius:24px;background:linear-gradient(135deg,#091525,#0d1728 55%,#11152c);box-shadow:0 30px 100px rgba(0,0,0,.62);color:#fff;font-family:inherit;animation:gaCookieIn .35s ease-out}.game-api-cookie-art{min-height:175px;border-radius:18px;display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(79,140,255,.25),transparent 55%),linear-gradient(145deg,#101f38,#111126)}.game-api-cookie-art:before{content:"";width:94px;height:94px;border-radius:50%;background:linear-gradient(145deg,#d9a15c,#a96834);box-shadow:inset -10px -8px 0 rgba(87,42,19,.16),0 18px 35px rgba(0,0,0,.35);position:absolute}.game-api-cookie-art:after{content:"";width:12px;height:12px;border-radius:50%;background:#6e3d22;position:absolute;left:70px;top:62px;box-shadow:27px 9px 0 #6e3d22,12px 34px 0 #6e3d22,43px 42px 0 #6e3d22,-8px 50px 0 #6e3d22}.game-api-cookie-content h3{margin:0 0 7px;font-size:20px}.game-api-cookie-content>p{margin:0 0 14px;color:#9aa9bd;font-size:12px;line-height:1.65}.game-api-cookie-points{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:17px}.game-api-cookie-point{padding:9px 10px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:rgba(255,255,255,.025);color:#b7c3d4;font-size:10px;line-height:1.45}.game-api-cookie-point i{color:#79a8ff;margin-right:5px}.game-api-cookie-actions{display:flex;gap:9px}.game-api-cookie-actions button{flex:1;border-radius:12px;padding:11px 14px;font:800 11px inherit;cursor:pointer}.game-api-cookie-accept{border:0;background:linear-gradient(135deg,#2563eb,#6d4cff);color:#fff}.game-api-cookie-decline{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.035);color:#c0cada}.game-api-cookie-actions button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  @keyframes gaTeaserIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes gaCookieIn{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:none}}
+  @media(max-width:560px){.game-api-ai-teaser{right:14px;bottom:132px;width:calc(100vw - 28px)}.game-api-cookie-overlay{padding:12px}.game-api-cookie-card{grid-template-columns:1fr;gap:14px;padding:17px;border-radius:20px;max-height:calc(100vh - 24px);overflow:auto}.game-api-cookie-art{min-height:105px}.game-api-cookie-points{grid-template-columns:1fr}.game-api-cookie-content h3{font-size:18px}.game-api-cookie-actions{position:sticky;bottom:0}.game-api-ai-panel.ai-session-active{z-index:10001}}
+  `;
+  document.head.appendChild(style);
+
+  const launcher=()=>document.getElementById('gameApiAiLauncher');
+  const panel=()=>document.getElementById('gameApiAiPanel');
+  const messages=()=>panel()?.querySelector('.game-api-ai-messages');
+  const inputArea=()=>panel()?.querySelector('.game-api-ai-input');
+  const note=()=>panel()?.querySelector('.game-api-ai-note');
+
+  function addTeaser(){
+    if(document.getElementById('gameApiAiTeaser')||!launcher())return;
+    const el=document.createElement('div');el.id='gameApiAiTeaser';el.className='game-api-ai-teaser';el.setAttribute('role','button');el.setAttribute('tabindex','0');
+    el.innerHTML='<div class="game-api-ai-teaser-row"><div class="game-api-ai-teaser-icon"><i class="fa-solid fa-robot"></i></div><div><strong>Need help with Game API?</strong><span>Chat with our AI Assistant for quick guidance.</span></div><div class="game-api-ai-teaser-arrow"><i class="fa-solid fa-arrow-right"></i></div></div>';
+    document.body.appendChild(el);
+    const open=()=>{el.remove();launcher().click();setTimeout(()=>{const p=panel();if(p){p.classList.add('ai-session-active');p.querySelector('textarea')?.focus()}},30)};
+    el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+  }
+
+  function setupSession(){
+    const p=panel(),l=launcher();if(!p||!l||p.dataset.enhanced)return;
+    p.dataset.enhanced='1';
+    const head=p.querySelector('.game-api-ai-head');
+    const close=p.querySelector('.game-api-ai-close');
+    const end=document.createElement('button');end.type='button';end.className='game-api-ai-end';end.innerHTML='<i class="fa-solid fa-phone-slash"></i> End Chat';
+    head?.insertBefore(end,close);
+
+    function showActive(){
+      p.classList.add('ai-session-active');
+      document.getElementById('gameApiAiTeaser')?.remove();
+      setTimeout(()=>{if(p.classList.contains('open'))p.querySelector('textarea')?.focus()},50);
+    }
+    function showRating(){
+      p.classList.remove('ai-session-active');
+      close.style.display='none';
+      if(inputArea())inputArea().style.display='none';
+      if(note())note().style.display='none';
+      const m=messages();if(!m)return;
+      m.innerHTML='<div class="game-api-ai-rating"><div class="game-api-ai-rating-icon"><i class="fa-solid fa-star"></i></div><h3>Rate Game API AI Assistant</h3><p>Your feedback helps us improve the support experience. How would you rate this chat?</p><div class="game-api-ai-stars" role="group" aria-label="Rate AI Assistant"></div><div class="game-api-ai-thanks">Thank you for rating the Game API AI Assistant.</div><button class="game-api-ai-new" type="button"><i class="fa-solid fa-plus"></i>&nbsp; Start New Chat</button></div>';
+      const rating=m.querySelector('.game-api-ai-rating'),stars=m.querySelector('.game-api-ai-stars');
+      for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.className='game-api-ai-star';b.setAttribute('aria-label',i+' star'+(i>1?'s':''));b.innerHTML='<i class="fa-solid fa-star"></i>';b.addEventListener('click',()=>{stars.querySelectorAll('.game-api-ai-star').forEach((s,n)=>s.classList.toggle('selected',n<i));rating.classList.add('rated');try{localStorage.setItem('gameApiAiLastRating',String(i))}catch(e){}});stars.appendChild(b)}
+      m.scrollTop=0;
+      m.querySelector('.game-api-ai-new').addEventListener('click',()=>location.reload());
+    }
+    end.addEventListener('click',()=>{showRating()});
+    l.addEventListener('click',()=>{showActive();p.classList.add('open')});
+    close.addEventListener('click',e=>{if(p.classList.contains('ai-session-active')){e.preventDefault();e.stopImmediatePropagation();p.classList.add('open')}});
+    p.addEventListener('click',e=>{if(p.classList.contains('ai-session-active')&&e.target===p){e.preventDefault()}});
+    window.addEventListener('beforeunload',()=>{});
+  }
+
+  function cookieConsent(){
+    let choice=null;try{choice=localStorage.getItem('gameApiCookieConsent')}catch(e){}
+    if(choice)return;
+    const overlay=document.createElement('div');overlay.className='game-api-cookie-overlay';overlay.id='gameApiCookieConsent';
+    overlay.innerHTML='<div class="game-api-cookie-card" role="dialog" aria-modal="true" aria-labelledby="gameApiCookieTitle"><div class="game-api-cookie-art" aria-hidden="true"><i class="fa-solid fa-cookie-bite" style="position:relative;z-index:2;color:#ffe1a8;font-size:34px"></i></div><div class="game-api-cookie-content"><h3 id="gameApiCookieTitle">Your privacy matters</h3><p>Game API uses cookies or similar browser storage to remember your preferences and support website features. We keep this choice on your device so we do not ask you again on every visit.</p><div class="game-api-cookie-points"><div class="game-api-cookie-point"><i class="fa-solid fa-check"></i> Remember your consent choice</div><div class="game-api-cookie-point"><i class="fa-solid fa-sliders"></i> Support site preferences</div><div class="game-api-cookie-point"><i class="fa-solid fa-robot"></i> Support AI chat features</div><div class="game-api-cookie-point"><i class="fa-solid fa-shield-halved"></i> Never ask for passwords or API keys</div></div><div class="game-api-cookie-actions"><button class="game-api-cookie-decline" type="button">Decline</button><button class="game-api-cookie-accept" type="button">Accept</button></div></div></div>';
+    document.body.appendChild(overlay);
+    const save=v=>{try{localStorage.setItem('gameApiCookieConsent',v)}catch(e){}overlay.remove()};
+    overlay.querySelector('.game-api-cookie-accept').addEventListener('click',()=>save('accepted'));
+    overlay.querySelector('.game-api-cookie-decline').addEventListener('click',()=>save('declined'));
+  }
+
+  function init(){
+    if(!panel()||!launcher()){setTimeout(init,80);return}
+    setupSession();
+    addTeaser();
+    cookieConsent();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
+})();
