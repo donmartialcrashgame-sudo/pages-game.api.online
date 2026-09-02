@@ -51,3 +51,5 @@ jobs:
           fi
           git commit -m "Enable AI chat and consent UI site-wide"
           git push
+
+      # Site-wide AI, teaser, rating and privacy-consent deployment
