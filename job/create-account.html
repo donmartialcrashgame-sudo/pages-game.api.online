@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Create Game API Account | Game API</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+body{background:#060912;min-height:100vh}.wrap{max-width:760px;margin:70px auto;padding:20px}.panel{background:#0c1320;border:1px solid #ffffff12;border-radius:24px;padding:34px;box-shadow:0 24px 70px #0008}.eyebrow{display:inline-block}.intro{color:#aab6c8;line-height:1.7}.application{display:flex;align-items:center;justify-content:space-between;gap:15px;background:#08101d;border:1px solid #ffffff12;border-radius:16px;padding:18px;margin:24px 0}.code{font-size:22px;font-weight:900;letter-spacing:1.5px;word-break:break-all}.badge{padding:7px 10px;border-radius:999px;background:#17243a;color:#9fc0ff;font-size:12px;font-weight:800}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field{display:flex;flex-direction:column;gap:8px}.full{grid-column:1/-1}.field input{box-sizing:border-box;width:100%;background:#070b13;color:#fff;border:1px solid #ffffff18;border-radius:12px;padding:14px;font-size:16px}.field input:focus{outline:none;border-color:#4f8cff;box-shadow:0 0 0 3px #4f8cff18}.hint{font-size:12px;color:#8190a7}.check{display:flex;gap:10px;align-items:flex-start;color:#aab6c8;font-size:14px;line-height:1.5}.check input{margin-top:4px}.btn{border:0;border-radius:12px;padding:15px 24px;background:#4f8cff;color:#fff;font-weight:800;font-size:16px;cursor:pointer}.btn:disabled{opacity:.6;cursor:wait}.btn.secondary{background:#182438;text-decoration:none;display:inline-block}.result{display:none;margin-top:22px;padding:20px;border-radius:14px;background:#101b2d;border:1px solid #ffffff12}.result.success{border-color:#35d07f66;background:#0b241b}.result.error{border-color:#ff5c5c66;background:#2a1118}.result h2{margin-top:0}.user-id{font-family:monospace;word-break:break-all;background:#070b13;padding:12px;border-radius:10px;margin:10px 0}.actions{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.panel{padding:24px}.application{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../index.html"><span class="brand-mark">DM</span><span>Game <b>API</b></span></a><nav><a href="../index.html">Home</a><a href="../jobs.html">Jobs</a></nav></div></header>
+<main class="wrap"><div class="panel">
+<span class="eyebrow">ACCOUNT REGISTRATION</span>
+<h1>Create your Game API account</h1>
+<p class="intro">Your job application has been approved. Use the same application code and email address from your approved application to request your Game API account.</p>
+<div class="application"><div><div class="hint">APPLICATION CODE</div><div id="applicationCode" class="code">Loading...</div></div><span id="approvalBadge" class="badge">VERIFYING</span></div>
+<div id="lookupError" class="result error"></div>
+<form id="accountForm" novalidate style="display:none">
+<div class="grid">
+<div class="field"><label for="fullName">Full name</label><input id="fullName" name="full_name" autocomplete="name" required></div>
+<div class="field"><label for="email">Approved email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+<div class="field"><label for="password">Create password</label><input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required><span class="hint">At least 8 characters.</span></div>
+<div class="field"><label for="confirmPassword">Confirm password</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+<div class="field full"><label class="check"><input id="terms" type="checkbox" required><span>I understand that creating this account submits my registration for Game API account review. I will not be able to start work until the required account review and exam stages are completed.</span></label></div>
+<div class="field full"><button id="submitBtn" class="btn" type="submit">Create Account &amp; Submit for Review</button></div>
+</div>
+</form>
+<div id="result" class="result" aria-live="polite"></div>
+<div class="actions"><a class="btn secondary" href="index.html">Application Portal</a><a class="btn secondary" id="reviewLink" href="#">Back to Application</a></div>
+</div></main>
+<script>
+const API='https://qbagxeqquskkjksoraiz.supabase.co/functions/v1/create-game-api-account';
+const CHECK='https://qbagxeqquskkjksoraiz.supabase.co/functions/v1/job-check-status';
+const params=new URLSearchParams(location.search);
+const code=(params.get('code')||'').trim().toUpperCase();
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const codeEl=document.getElementById('applicationCode'),badge=document.getElementById('approvalBadge'),form=document.getElementById('accountForm'),lookupError=document.getElementById('lookupError'),result=document.getElementById('result'),submitBtn=document.getElementById('submitBtn');
+const fullName=document.getElementById('fullName'),email=document.getElementById('email'),reviewLink=document.getElementById('reviewLink');
+if(code)reviewLink.href='review.html?code='+encodeURIComponent(code);else reviewLink.href='index.html';
+function showResult(message,type){result.style.display='block';result.className='result '+type;result.innerHTML=message;}
+async function verifyApplication(){
+ if(!code){codeEl.textContent='No code';badge.textContent='INVALID';showResult('<h2>Application code required</h2><p>Please return to the application portal and open this page using your approved application code.</p>','error');return;}
+ codeEl.textContent=code;
+ try{
+  const r=await fetch(CHECK+'?application_code='+encodeURIComponent(code),{method:'GET',cache:'no-store'});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||'Unable to verify your application.');
+  const a=d.application;
+  if(!a)throw new Error('Application data was not returned.');
+  if(String(a.review_status||'').toLowerCase()!=='approved'){
+   badge.textContent=String(a.review_status||'PENDING').toUpperCase();
+   showResult('<h2>Account creation is not available yet</h2><p>Your job application must be approved before you can create a Game API account.</p><p>Current application status: <b>'+esc(String(a.review_status||'pending').toUpperCase())+'</b></p>','error');return;
+  }
+  if(a.auth_user_id){
+   badge.textContent='ACCOUNT CREATED';
+   showResult('<h2>Account already created</h2><p>An account is already linked to this application.</p><p><b>Application Code</b></p><div class="user-id">'+esc(a.application_code)+'</div><p><b>User ID</b></p><div class="user-id">'+esc(a.auth_user_id)+'</div><p>Account status: <b>'+esc(String(a.account_creation_status||'pending').toUpperCase())+'</b></p>','success');return;
+  }
+  badge.textContent='APPROVED';
+  fullName.value=a.full_name||'';
+  email.value=a.email||'';
+  fullName.readOnly=true;email.readOnly=true;
+  form.style.display='block';
+ }catch(err){badge.textContent='ERROR';showResult('<h2>Unable to verify application</h2><p>'+esc(err.message||'Please try again.')+'</p><p>Check your application code and try again.</p>','error');}
+}
+form.addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(!form.checkValidity()){form.reportValidity();return;}
+ if(document.getElementById('password').value!==document.getElementById('confirmPassword').value){showResult('<h2>Passwords do not match</h2><p>Please enter the same password in both password fields.</p>','error');return;}
+ submitBtn.disabled=true;submitBtn.textContent='Creating account...';result.style.display='none';
+ try{
+  const body={application_code:code,full_name:fullName.value.trim(),email:email.value.trim().toLowerCase(),password:document.getElementById('password').value};
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||'Unable to create your account.');
+  const a=d.account||{};
+  form.style.display='none';badge.textContent='PENDING REVIEW';
+  showResult('<h2>✓ Account registration submitted</h2><p>Your Game API account has been created and linked to your existing application. It is now <b>Pending Review</b>.</p><p><b>Application Code</b></p><div class="user-id">'+esc(a.application_code||code)+'</div><p><b>User ID</b></p><div class="user-id">'+esc(a.auth_user_id||'Created successfully')+'</div><p>Keep these details safe. You must pass the account review and the required exam before you can start working.</p><p><a class="btn" href="review.html?code='+encodeURIComponent(code)+'">View Application &amp; Account Status</a></p>','success');
+ }catch(err){showResult('<h2>Account creation failed</h2><p>'+esc(err.message||'Please try again.')+'</p><p>Your approved application has not been changed.</p>','error');}
+ finally{submitBtn.disabled=false;submitBtn.textContent='Create Account & Submit for Review';}
+});
+verifyApplication();
+</script>
+</body></html>
