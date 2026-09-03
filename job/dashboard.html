@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>Game API — Job Dashboard</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../css/style.css">
+<style>
+body{background:#060912;min-height:100vh}.wrap{max-width:980px;margin:50px auto;padding:20px}.panel{background:#0c1320;border:1px solid #ffffff12;border-radius:24px;padding:30px;box-shadow:0 24px 70px #0008}.intro,.muted{color:#aab6c8;line-height:1.7}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:22px}.card{background:#08101d;border:1px solid #ffffff12;border-radius:16px;padding:18px}.label{font-size:12px;color:#8190a7;text-transform:uppercase;letter-spacing:.08em}.value{margin-top:7px;font-size:17px;font-weight:800;word-break:break-word}.status{display:inline-flex;padding:7px 11px;border-radius:999px;background:#17243a;color:#9fc0ff;font-size:12px;font-weight:800}.step{margin-top:22px;padding:20px;border:1px solid #4f8cff30;border-radius:16px;background:#4f8cff0b}.btn{border:0;border-radius:12px;padding:13px 20px;background:#4f8cff;color:#fff;font-weight:800;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}.btn.secondary{background:#182438}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.error{color:#ffb3b3}.login{max-width:460px;margin:30px auto 0}.field{display:flex;flex-direction:column;gap:8px;margin-bottom:15px}.field input{box-sizing:border-box;width:100%;background:#070b13;color:#fff;border:1px solid #ffffff18;border-radius:12px;padding:13px;font-size:15px}.field input:focus{outline:none;border-color:#4f8cff;box-shadow:0 0 0 3px #4f8cff18}.hidden{display:none}.ok{border-color:#35d07f66;background:#0b241b}.warning{border-color:#f4bd5066;background:#241c0b}@media(max-width:700px){.grid{grid-template-columns:1fr}.panel{padding:22px}}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="../index.html"><span class="brand-mark">DM</span><span>Game <b>API</b></span></a><nav><a href="../index.html">Home</a><a href="../jobs.html">Jobs</a></nav></div></header>
+<main class="wrap"><div class="panel">
+<span class="eyebrow">GAME API JOB DASHBOARD</span><h1 id="title">Job Account Dashboard</h1>
+<p id="intro" class="intro">Sign in with the Game API account you created after your job application was approved.</p>
+<div id="message" class="step hidden"></div>
+<form id="loginForm" class="login" novalidate>
+<div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="email" required></div>
+<div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+<button id="loginBtn" class="btn" type="submit">Sign in to Dashboard</button>
+</form>
+<section id="dashboard" class="hidden">
+<div id="statusBox" class="step"><strong id="welcome">Welcome.</strong><p id="statusText" class="muted"></p></div>
+<div class="grid">
+<div class="card"><div class="label">Full Name</div><div id="fullName" class="value">—</div></div>
+<div class="card"><div class="label">Email</div><div id="accountEmail" class="value">—</div></div>
+<div class="card"><div class="label">Application Code</div><div id="applicationCode" class="value">—</div></div>
+<div class="card"><div class="label">Permanent User ID</div><div id="userId" class="value">—</div></div>
+<div class="card"><div class="label">Job</div><div id="jobTitle" class="value">—</div></div>
+<div class="card"><div class="label">Account Status</div><div id="accountStatus" class="value"><span class="status">—</span></div></div>
+<div class="card"><div class="label">Exam Status</div><div id="examStatus" class="value"><span class="status">—</span></div></div>
+<div class="card"><div class="label">Account Created</div><div id="createdAt" class="value">—</div></div>
+</div>
+<div id="nextStep" class="step"></div>
+<div class="actions"><a id="examBtn" class="btn hidden" href="exam.html">Start Required Exam</a><a class="btn secondary" href="review.html">Application Status</a><button id="signOut" class="btn secondary" type="button">Sign out</button></div>
+</section>
+</div></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.105.0';
+const supabase=createClient('https://qbagxeqquskkjksoraiz.supabase.co','sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const DASH='https://qbagxeqquskkjksoraiz.supabase.co/functions/v1/job-account-dashboard';
+const $=id=>document.getElementById(id), params=new URLSearchParams(location.search), code=(params.get('code')||'').trim().toUpperCase();
+function showMessage(html,kind=''){const m=$('message');m.className='step '+kind;m.innerHTML=html;m.classList.remove('hidden')}
+function fmt(v){if(!v)return'—';try{return new Date(v).toLocaleString()}catch{return String(v)}}
+function setStatus(el,value){el.innerHTML='<span class="status">'+String(value||'—').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&/g,'&amp;')+'</span>'}
+async function loadDashboard(){
+ const{data:{session}}=await supabase.auth.getSession();
+ if(!session){$('loginForm').classList.remove('hidden');return}
+ $('loginForm').classList.add('hidden');
+ try{
+   const r=await fetch(DASH,{headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--'},cache:'no-store'}),d=await r.json().catch(()=>({}));
+   if(!r.ok)throw new Error(d.error||'Unable to load your dashboard.');
+   const a=d.account;
+   if(code&&a.application_code!==code)throw new Error('This dashboard link does not match the signed-in job account.');
+   $('fullName').textContent=a.full_name||'—';$('accountEmail').textContent=a.email||d.user?.email||'—';$('applicationCode').textContent=a.application_code||'—';$('userId').textContent=a.user_id||d.user?.id||'—';$('jobTitle').textContent=a.job_title||'—';setStatus($('accountStatus'),a.account_status);setStatus($('examStatus'),a.exam_status);$('createdAt').textContent=fmt(a.account_created_at||a.created_at);$('welcome').textContent='Welcome, '+(a.full_name||'Game API team member')+'.';
+   $('dashboard').classList.remove('hidden');
+   const sb=String(a.account_status||'').toLowerCase(), ex=String(a.exam_status||'').toLowerCase();
+   if(sb==='approved'&&ex==='not_started'){ $('statusBox').className='step ok';$('statusText').textContent='Your Game API job account is approved. The required exam is now your next step before you can start working.';$('nextStep').innerHTML='<strong>Next step: Required Exam</strong><p class="muted">Complete the exam before work access is enabled.</p>';$('examBtn').classList.remove('hidden'); }
+   else if(sb==='approved'&&ex==='in_progress'){ $('statusBox').className='step warning';$('statusText').textContent='Your account is approved and your exam is in progress.';$('nextStep').innerHTML='<strong>Continue your exam</strong><p class="muted">Finish the required exam before work access is enabled.</p>';$('examBtn').classList.remove('hidden'); }
+   else if(sb==='approved'&&ex==='passed'){ $('statusBox').className='step ok';$('statusText').textContent='Your account is approved and your required exam has been passed.';$('nextStep').innerHTML='<strong>Work eligibility ready</strong><p class="muted">Your account has completed the required account and exam stages.</p>'; }
+   else if(sb==='declined'){ $('statusBox').className='step warning';$('statusText').textContent='Your job account request was declined. Please contact Game API support for the next step.';$('nextStep').innerHTML='<strong>Account review declined</strong><p class="muted">Your permanent User ID remains unchanged.</p>'; }
+   else { $('statusText').textContent='Your job account is still under review. You cannot start work until the account is approved and the required exam is completed.';$('nextStep').innerHTML='<strong>Waiting for account approval</strong><p class="muted">Refresh this page after an administrator completes the review.</p>'; }
+ }catch(e){showMessage('<strong>Dashboard unavailable</strong><p>'+String(e.message||'Please sign in again.').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p>','warning')}
+}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('loginBtn');btn.disabled=true;btn.textContent='Signing in…';$('message').classList.add('hidden');try{const{error}=await supabase.auth.signInWithPassword({email:$('email').value.trim().toLowerCase(),password:$('password').value});if(error)throw error;await loadDashboard()}catch(err){showMessage('<strong>Sign in failed</strong><p>'+String(err.message||'Invalid email or password.').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p>','warning')}finally{btn.disabled=false;btn.textContent='Sign in to Dashboard'}});
+$('signOut').onclick=async()=>{await supabase.auth.signOut();location.reload()};
+loadDashboard();
+</script>
+</body></html>
